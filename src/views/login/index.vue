@@ -21,6 +21,7 @@
         left-icon="shouji"
         placeholder="请输入手机号"
         name="phoneNumber"
+        center
         :rules="formRules.mobile"
       />
       <van-field
@@ -30,13 +31,22 @@
         left-icon="yanzhengma"
         placeholder="请输入验证码"
         name="code"
+        center
         :rules="formRules.code"
       >
         <template #button>
+          <van-count-down
+            v-if="iscountdownshow"
+            :time="1000 * 60"
+            format="ss s"
+            @finish="iscountdownshow = false"
+          />
           <van-button
+            v-else
             class="send-btn"
             size="mini"
             round
+            :loading="isSendSmsLoading"
             @click.prevent="onSendSms"
           >
             获取验证码
@@ -87,6 +97,8 @@ export default {
           },
         ],
       },
+      iscountdownshow: false,
+      isSendSmsLoading: false,
     };
   },
   methods: {
@@ -103,8 +115,11 @@ export default {
         duration: 0,
       });
       try {
-        const res = await login(this.user);
+        // 直接将返回数据里的data解构出来
+        const { data } = await login(this.user);
         Toast.success("登录成功");
+        // 登录成功，将后端返回的用户登录状态(token等数据)放到vuex中
+        this.$store.commit("setUser", data.data);
       } catch (error) {
         Toast.fail("登录失败，手机号码或者验证码错误");
       }
@@ -121,8 +136,15 @@ export default {
       // 校验手机号码
       // 验证通过 -> 请求发送验证码 -> 用户接收
       try {
+        // 校验手机号
         await this.$refs["login-form"].validate("phoneNumber");
-        const res = await sendSms(this.user.mobile);
+        // 为了防止重复点击导致反复发送请求，先禁用按钮
+        this.isSendSmsLoading = true;
+        // 验证通过发送验证码
+        await sendSms(this.user.mobile);
+        // 短信已发送，隐藏发送给按钮，显示倒计时
+        this.iscountdownshow = true;
+        // 倒计时结束再次显示发送按钮 vant-count-down组件自带一个finish事件
       } catch (error) {
         console.log(error);
         let message = "";
@@ -139,6 +161,8 @@ export default {
           message,
           position: "top",
         });
+      } finally {
+        this.isSendSmsLoading = false;
       }
     },
   },
