@@ -120,6 +120,8 @@ export default {
         Toast.success("登录成功");
         // 登录成功，将后端返回的用户登录状态(token等数据)放到vuex中
         this.$store.commit("setUser", data.data);
+        // 登录成功跳转到my页面
+        this.$router.back();
       } catch (error) {
         Toast.fail("登录失败，手机号码或者验证码错误");
       }
