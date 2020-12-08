@@ -1,14 +1,71 @@
 <template>
   <div class="home-container">
-    <h1>首页</h1>
+    <!-- 导航栏 -->
+    <van-nav-bar class="app-nav-bar">
+      <van-button
+        class="search-btn"
+        slot="title"
+        icon="search"
+        type="info"
+        size="small"
+        round
+        >搜索</van-button
+      >
+    </van-nav-bar>
+    <!-- 文章文类列表 标签页组件有一个功能，只有你第一查看的时候才渲染-->
+    <van-tabs v-model="active">
+      <van-tab v-for="item in channels" :title="item.name" :key="item.id">
+        <!-- 文章列表 -->
+        <article-list :channel="item"></article-list>
+      </van-tab>
+    </van-tabs>
   </div>
 </template>
 
 <script>
+import { getUserChannels } from "@/api/user";
+import ArticleList from "./components/article-list.vue";
+
 export default {
   name: "HomeIndex",
+  components: {
+    ArticleList,
+  },
+  data() {
+    return {
+      active: 2,
+      // 频道列表
+      channels: [],
+    };
+  },
+  created() {
+    this.loadChannels();
+  },
+  methods: {
+    async loadChannels() {
+      const { data } = await getUserChannels();
+      this.channels = data.data.channels;
+    },
+  },
 };
 </script>
 
 <style lang="less" scoped>
+.home-container {
+  /deep/ .van-nav-bar__title {
+    max-width: unset;
+  }
+  .search-btn {
+    width: 277px;
+    height: 32px;
+    background: #5babfb;
+    border: none;
+    .van-button__text {
+      font-size: 14px;
+    }
+    .van-icon {
+      font-size: 16px;
+    }
+  }
+}
 </style>

@@ -41,7 +41,7 @@
     </van-cell-group>
     <div v-else class="not-login">
       <div @click="$router.push('/login')">
-        <img class="mobile" src="" alt="" />
+        <img class="mobile" src="../../assets/img/phone.png" alt="" />
       </div>
       <div class="text">登录 / 注册</div>
     </div>
@@ -115,7 +115,7 @@ export default {
 <style lang="less" scoped>
 .my-container {
   .my-info {
-    background: url("../../assets/img/3.jpg") no-repeat;
+    background: url("../../assets/img/banner.png") no-repeat;
     .base-info {
       height: 115px;
       padding-top: 38px;
@@ -199,7 +199,7 @@ export default {
 
   .not-login {
     height: 180px;
-    background: url("../../assets/img/3.jpg") no-repeat;
+    background: url("../../assets/img/banner.png") no-repeat;
     background-size: cover;
     display: flex;
     flex-direction: column;
