@@ -58,7 +58,7 @@ export default {
         // 是否包含置顶，进入页面第一次请求时要包含置顶文章，1-包含置顶，0-不包含
         with_top: 1,
       });
-      // 2.数据放入list数组中
+      // 2.数据放入articles数组中
       this.articles.push(...data.data.results);
       // 3.设置本次加载状态结束，它才可以接着加载下一次
       this.loading = false;

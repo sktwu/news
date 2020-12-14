@@ -13,18 +13,32 @@
       >
     </van-nav-bar>
     <!-- 文章文类列表 标签页组件有一个功能，只有你第一查看的时候才渲染-->
-    <van-tabs v-model="active">
+    <van-tabs class="channel-tabs" v-model="active">
       <van-tab v-for="item in channels" :title="item.name" :key="item.id">
         <!-- 文章列表 -->
         <article-list :channel="item"></article-list>
       </van-tab>
+      <div slot="nav-right" class="wap-nav-placeholder"></div>
+      <div slot="nav-right" @click="channelShow = true" class="wap-nav-wrap">
+        <van-icon name="wap-nav" />
+      </div>
     </van-tabs>
+    <van-popup
+      v-model="channelShow"
+      position="bottom"
+      class="channel-edit-popup"
+      closeable
+      close-icon-position="top-left"
+    >
+      <channel-edit></channel-edit>
+    </van-popup>
   </div>
 </template>
 
 <script>
 import { getUserChannels } from "@/api/user";
 import ArticleList from "./components/article-list.vue";
+import ChannelEdit from "./components/channel-edit";
 
 export default {
   name: "HomeIndex",
@@ -36,6 +50,7 @@ export default {
       active: 2,
       // 频道列表
       channels: [],
+      channelShow: true,
     };
   },
   created() {
@@ -66,6 +81,35 @@ export default {
     .van-icon {
       font-size: 16px;
     }
+  }
+  .channel-tabs {
+    /deep/ .van-tabs__line {
+      width: 15px !important;
+      height: 3px;
+      background-color: #3296fa;
+      bottom: 20px;
+    }
+  }
+  .channel-edit-popup {
+    height: 100%;
+  }
+  .wap-nav-wrap {
+    position: fixed;
+    right: 0;
+    width: 33px;
+    height: 44px;
+    opacity: 0.9;
+    background-color: #fff;
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    .van-icon {
+      font-size: 24px;
+    }
+  }
+  .wap-nav-placeholder {
+    width: 33px;
+    flex-shrink: 0;
   }
 }
 </style>
