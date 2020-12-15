@@ -30,7 +30,7 @@
       closeable
       close-icon-position="top-left"
     >
-      <channel-edit></channel-edit>
+      <channel-edit :edit-channels="channels"></channel-edit>
     </van-popup>
   </div>
 </template>
@@ -38,12 +38,13 @@
 <script>
 import { getUserChannels } from "@/api/user";
 import ArticleList from "./components/article-list.vue";
-import ChannelEdit from "./components/channel-edit";
+import ChannelEdit from "./components/channel-edit.vue";
 
 export default {
   name: "HomeIndex",
   components: {
     ArticleList,
+    ChannelEdit,
   },
   data() {
     return {
