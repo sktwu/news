@@ -30,7 +30,12 @@
       closeable
       close-icon-position="top-left"
     >
-      <channel-edit :edit-channels="channels"></channel-edit>
+      <channel-edit
+        :edit-channels="channels"
+        :active="active"
+        @close="channelShow = false"
+        @updateActive="onUpdateActive"
+      ></channel-edit>
     </van-popup>
   </div>
 </template>
@@ -39,6 +44,8 @@
 import { getUserChannels } from "@/api/user";
 import ArticleList from "./components/article-list.vue";
 import ChannelEdit from "./components/channel-edit.vue";
+import { mapState } from "vuex";
+import { getItem } from "@/utils/storage";
 
 export default {
   name: "HomeIndex",
@@ -51,16 +58,34 @@ export default {
       active: 2,
       // 频道列表
       channels: [],
-      channelShow: true,
+      channelShow: false,
     };
+  },
+  computed: {
+    ...mapState(["user"]),
   },
   created() {
     this.loadChannels();
   },
   methods: {
     async loadChannels() {
-      const { data } = await getUserChannels();
-      this.channels = data.data.channels;
+      let channels = [];
+      if (this.user) {
+        const { data } = await getUserChannels();
+        channels = data.data.channels;
+      } else {
+        let localChannels = getItem("user-channels");
+        if (localChannels) {
+          channels = localChannels;
+        } else {
+          const { data } = await getUserChannels();
+          channels = data.data.channels;
+        }
+      }
+      this.channels = channels;
+    },
+    onUpdateActive(index) {
+      this.active = index;
     },
   },
 };

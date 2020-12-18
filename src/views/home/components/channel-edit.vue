@@ -2,14 +2,24 @@
   <div class="channel-edit">
     <van-cell center :border="false">
       <div slot="title" class="channel-title">我的频道</div>
-      <van-button type="danger" size="mini" plain round>编辑</van-button>
+      <van-button
+        type="danger"
+        size="mini"
+        plain
+        round
+        @click="isEdit = !isEdit"
+        >{{ isEdit ? "完成" : "编辑" }}</van-button
+      >
     </van-cell>
     <van-grid :gutter="10">
       <van-grid-item
         class="grid-item"
+        :class="{ active: index === active }"
+        :icon="isEdit && index !== 0 ? 'clear' : ''"
         v-for="(value, index) in editChannels"
         :key="index"
         :text="value.name"
+        @click="onUserChannelClick(value, index)"
       />
     </van-grid>
     <van-cell center :border="false">
@@ -28,7 +38,13 @@
 </template>
 
 <script>
-import { getAllChannels } from "@/api/channel";
+import {
+  getAllChannels,
+  addUserChannels,
+  deleteUserChannels,
+} from "@/api/channel";
+import { mapState } from "vuex";
+import { setItem } from "@/utils/storage";
 
 export default {
   name: "ChannelEdit",
@@ -37,10 +53,15 @@ export default {
       type: Array,
       require: true,
     },
+    active: {
+      type: Number,
+      require: true,
+    },
   },
   data() {
     return {
       allChannels: [],
+      isEdit: false,
     };
   },
   computed: {
@@ -53,6 +74,7 @@ export default {
         });
       });
     },
+    ...mapState(["user"]),
   },
   created() {
     this.loadAllChannels();
@@ -62,8 +84,53 @@ export default {
       const { data } = await getAllChannels();
       this.allChannels = data.data.channels;
     },
-    onAdd(channel) {
+    async onAdd(channel) {
       this.editChannels.push(channel);
+      // 数据持久化
+      if (this.user) {
+        // 已登录,数据存储到线上
+        await addUserChannels({
+          channels: [
+            {
+              id: channel.id,
+              seq: this.editChannels.length,
+            },
+          ],
+        });
+      } else {
+        // 未登录,数据存储到本地
+        setItem("user-channels", this.editChannels);
+      }
+    },
+    onUserChannelClick(value, index) {
+      // 编辑状态，删除频道
+      if (this.isEdit && index !== 0) {
+        this.deleteChannel(value, index);
+      } else {
+        // 非编辑状态，切换频道
+        this.switchChannel(index);
+      }
+    },
+    async deleteChannel(value, index) {
+      // 如果删除的是当前激活频道之前的频道
+      if (index <= this.active) {
+        this.$emit("updateActive", this.active - 1);
+      }
+      this.editChannels.splice(index, 1);
+      // 数据持久化
+      if (this.user) {
+        // 已登录,数据存储到线上
+        await deleteUserChannels(value.id);
+      } else {
+        // 未登录,数据存储到本地
+        setItem("user-channels", this.editChannels);
+      }
+    },
+    switchChannel(index) {
+      // 切换频道
+      this.$emit("updateActive", index);
+      // 向父组件传递一个函数，父组件监听处理
+      this.$emit("close");
     },
   },
 };
@@ -84,7 +151,20 @@ export default {
       .van-grid-item__text {
         font-size: 14px;
         color: #222;
+        margin-top: 0;
       }
+    }
+    /deep/ .van-grid-item__icon {
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      font-size: 20px;
+      color: #ccc;
+    }
+  }
+  .active {
+    /deep/ .van-grid-item__text {
+      color: red !important;
     }
   }
 }
