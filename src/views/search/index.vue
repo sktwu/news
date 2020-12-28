@@ -20,7 +20,12 @@
       @search="onSearch"
     />
     <!-- 历史记录 -->
-    <search-history v-else :search-histories="searchHistories" />
+    <search-history
+      v-else
+      :search-histories="searchHistories"
+      @search="onSearch"
+      @update-histories="searchHistories = $event"
+    />
   </div>
 </template>
 
@@ -29,7 +34,6 @@ import SearchSuggestion from "./components/search-suggestion";
 import SearchHistory from "./components/search-history";
 import SearchResult from "./components/search-result";
 import { setItem, getItem } from "@/utils/storage";
-import { getSearchHistories } from "@/api/search";
 import { mapState } from "vuex";
 
 export default {
@@ -46,6 +50,11 @@ export default {
   computed: {
     ...mapState(["user"]),
   },
+  watch: {
+    searchHistories() {
+      setItem("search-histories", this.searchHistories);
+    },
+  },
   created() {
     this.loadSearchHistories();
   },
@@ -57,17 +66,11 @@ export default {
         this.searchHistories.splice(index, 1);
       }
       this.searchHistories.unshift(searchText);
-      setItem("search-histories", this.searchHistories);
       this.isResultShow = true;
     },
     async loadSearchHistories() {
-      let localHistories = getItem("search-histories") || [];
-      if (this.user) {
-        const { data } = await getSearchHistories();
-        localHistories = [
-          ...new Set([...localHistories, ...data.data.keywords]),
-        ];
-      }
+      const localHistories = getItem("search-histories") || [];
+      this.searchHistories = localHistories;
     },
   },
   components: {

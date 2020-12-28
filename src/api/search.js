@@ -22,9 +22,9 @@ export const getSearchResults = params => {
   })
 }
 
-export const getSearchHistories = () => {
-  return request({
-    method: 'GET',
-    url: '/app/v1_0/search/histories',
-  })
-}
+// export const getSearchHistories = () => {
+//   return request({
+//     method: 'GET',
+//     url: '/app/v1_0/search/histories',
+//   })
+// }
